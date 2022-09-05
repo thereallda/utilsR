@@ -1,0 +1,52 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# utilsR
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+`utilsR` is my personal R-based handful utils in data analysis. Feel free to use it :)
+
+## Installation
+
+You can install the released version of utilsR the development version from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("thereallda/utilsR")
+```
+## Example
+
+```{r example}
+library(utilsR)
+```
+
+### ggPCA
+
+```{r}
+set.seed(123)
+counts_mat <- matrix(rnbinom(30000, mu=100, size=1), ncol=10)
+ggPCA(counts_mat, labels = paste(rep(c('A','B'), each=5), 1:5, sep = '.'), vst.norm = TRUE)
+```
+
+
+### BetweenStatPlot
+
+```{r}
+data("iris")
+head(iris)
+BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species')
+```
