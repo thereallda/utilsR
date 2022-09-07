@@ -50,3 +50,11 @@ data("iris")
 head(iris)
 BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species')
 ```
+
+### gene2goterm
+
+```{r}
+# Convert gene id to GO term
+gene2goterm(c("ENSMUSG00000025981", "ENSMUSG00000057363"), organism = 'mmusculus')
+```
+

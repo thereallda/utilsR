@@ -8,10 +8,10 @@
 #' @return ggplot2 object
 #' @export
 #'
-#' @importFrom DESeq2 vst
 #' @import dplyr
 #' @import ggplot2
-#' @importFrom  ggrepel geom_text_repel
+#' @importFrom DESeq2 vst
+#' @importFrom ggrepel geom_text_repel
 #' @importFrom stats prcomp
 #' @importFrom stringr str_remove
 #' @importFrom paintingr paint_palette
@@ -91,6 +91,31 @@ BetweenStatPlot <- function(data, x, y, color, palette = NULL) {
     scale_x_discrete(labels = x.labs) +
     ggpubr::stat_pvalue_manual(data = stat_dat, label = "p.adj", tip.length = 0.01, size = 3)+
     labs(x='')
+}
+
+#' Convert gene id to GO term
+#'
+#' @param query character vector that can consist of mixed types of gene IDs (proteins, transcripts, microarray IDs, etc), SNP IDs, chromosomal intervals or term IDs.
+#' @param organism organism name. Organism names are constructed by concatenating the first letter of the name and the family name. Example: human - 'hsapiens', mouse - 'mmusculus'.
+#' @param ... Additional parameters that can be passed to \code{gconvert}
+#'
+#' @return The input contains multiple fields including the query id, GO term id and term name, converted gene name, description and namespace.
+#' @export
+#'
+#' @examples
+#' gene2goterm(c("ENSMUSG00000025981", "ENSMUSG00000057363"),
+#' organism = 'mmusculus')
+#'
+#' @importFrom GO.db GOTERM
+#' @importFrom AnnotationDbi Term
+#' @importFrom gprofiler2 gconvert
+gene2goterm <- function(query, organism = 'hsapiens', ...) {
+  goterm <- Term(GOTERM)
+  goterm_df <- data.frame(target=names(goterm), term_name=goterm)
+  geneGO <- gconvert(query, organism = organism, target = 'GO', ...)
+  geneGO <- merge(geneGO, goterm_df, by='target')
+  geneGO <- geneGO[,c('input_number', 'input', 'target_number', 'target', 'term_name', 'name', 'description', 'namespace')]
+  return(geneGO)
 }
 
 # For adjusting no visible binding
