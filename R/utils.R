@@ -1,7 +1,8 @@
 #' PCA plot from counts matrix
 #'
 #' @param object A count matrix.
-#' @param labels character vector of sample names or labels. Defaults to colnames(object).
+#' @param group Vector of sample groups. 
+#' @param label Vector of sample names or labels. 
 #' @param vst.norm if TRUE perform vst transformation.
 #' @param palette The color palette for different groups.
 #'
@@ -13,9 +14,8 @@
 #' @importFrom DESeq2 vst
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom stats prcomp
-#' @importFrom stringr str_remove
 #' @importFrom paintingr paint_palette
-ggPCA <- function(object, labels = colnames(object), vst.norm=FALSE, palette = NULL) {
+ggPCA <- function(object, group, label=NULL, vst.norm=FALSE, palette=NULL) {
   if (vst.norm) {
     counts_norm <- DESeq2::vst(as.matrix(object))
   } else {
@@ -23,21 +23,17 @@ ggPCA <- function(object, labels = colnames(object), vst.norm=FALSE, palette = N
   }
 
   pca <- prcomp(t(counts_norm))
-  rownames(pca$x) <- labels
-
   pc.var <- round(summary(pca)$importance[2,], 3)
-
   pca_dat <- as.data.frame(pca$x) %>%
-    mutate(group = str_remove(labels, '\\.\\d$'))
+    mutate(group = group)
 
   if (is.null(palette)) {
     palette <- paint_palette("Spring", length(unique(pca_dat$group)), 'continuous')
   }
 
-  pca_dat %>%
+  p <- pca_dat %>%
     ggplot(aes(x=PC1, y=PC2)) +
     geom_point(aes(color=group), size=3) +
-    geom_text_repel(label=labels, max.overlaps = 20) +
     geom_vline(xintercept=0, color='grey80', lty=2) +
     geom_hline(yintercept=0, color='grey80', lty=2) +
     theme_bw() +
@@ -47,6 +43,11 @@ ggPCA <- function(object, labels = colnames(object), vst.norm=FALSE, palette = N
     scale_color_manual(values = palette) +
     labs(x=paste0('PC1: ', pc.var[1]*100, '%'),
          y=paste0('PC2: ', pc.var[2]*100, '%'))
+  
+  if (!is.null(label)) {
+    p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20) 
+  }
+  return(p)
 }
 
 #' Box-violin plot comparing values between groups

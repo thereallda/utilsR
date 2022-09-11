@@ -6,8 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-`utilsR` is my personal R-based handful utils in data analysis. Feel
-free to use it :)
+`utilsR` is my personal R-based useful utils in data analysis. Feel free
+to use it :)
 
 ## Installation
 
@@ -23,25 +23,26 @@ devtools::install_github("thereallda/utilsR")
 
 ``` r
 library(utilsR)
-#> Warning: replacing previous import 'lifecycle::last_warnings' by
-#> 'rlang::last_warnings' when loading 'tibble'
-#> Warning: replacing previous import 'lifecycle::last_warnings' by
-#> 'rlang::last_warnings' when loading 'pillar'
-#> 
 ```
 
 ### ggPCA
 
+PCA plot from counts matrix
+
 ``` r
 set.seed(123)
 counts_mat <- matrix(rnbinom(30000, mu=100, size=1), ncol=10)
-ggPCA(counts_mat, labels = paste(rep(c('A','B'), each=5), 1:5, sep = '.'), vst.norm = TRUE)
+groups <- paste(rep(c('A','B'), each=5), 1:5, sep = '.')
+labels <- paste(rep(c('A','B'), each=5), 1:5, sep = '.')
+ggPCA(counts_mat, group = groups, label = labels, vst.norm = TRUE)
 #> converting counts to integer mode
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
 ### BetweenStatPlot
+
+Box-violin plot comparing values between groups
 
 ``` r
 data("iris")
@@ -56,9 +57,11 @@ head(iris)
 BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species')
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 ### gene2goterm
+
+Convert gene id to GO term
 
 ``` r
 # Convert gene id to GO term
