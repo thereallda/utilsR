@@ -1,8 +1,8 @@
 #' PCA plot from counts matrix
 #'
 #' @param object A count matrix.
-#' @param group Vector of sample groups. 
-#' @param label Vector of sample names or labels. 
+#' @param group Vector of sample groups.
+#' @param label Vector of sample names or labels.
 #' @param vst.norm if TRUE perform vst transformation.
 #' @param palette The color palette for different groups.
 #'
@@ -28,7 +28,7 @@ ggPCA <- function(object, group, label=NULL, vst.norm=FALSE, palette=NULL) {
     mutate(group = group)
 
   if (is.null(palette)) {
-    palette <- paint_palette("Spring", length(unique(pca_dat$group)), 'continuous')
+    palette <- paintingr::paint_palette("Spring", length(unique(pca_dat$group)), 'continuous')
   }
 
   p <- pca_dat %>%
@@ -43,10 +43,11 @@ ggPCA <- function(object, group, label=NULL, vst.norm=FALSE, palette=NULL) {
     scale_color_manual(values = palette) +
     labs(x=paste0('PC1: ', pc.var[1]*100, '%'),
          y=paste0('PC2: ', pc.var[2]*100, '%'))
-  
-  if (!is.null(label)) {
-    p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20) 
+
+  if (is.null(label)) {
+    label <- colnames(object)
   }
+  p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20)
   return(p)
 }
 
