@@ -54,7 +54,8 @@ Box-violin plot comparing values between groups
 ```{r}
 data("iris")
 head(iris)
-BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species')
+BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species',
+                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')))
 ```
 
 ### gene2goterm
@@ -66,3 +67,13 @@ Convert gene id to GO term
 gene2goterm(c("ENSMUSG00000025981", "ENSMUSG00000057363"), organism = 'mmusculus')
 ```
 
+### ggVolcano
+
+```{r}
+library(DESeq2)
+dds <- makeExampleDESeqDataSet(n=5000, m=4, betaSD = 5)
+dds <- DESeq(dds)
+res <- results(dds, contrast=c("condition","B","A"))
+res.tab <- as.data.frame(res)
+ggVolcano(res.tab)
+```

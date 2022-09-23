@@ -4,7 +4,16 @@
 \alias{BetweenStatPlot}
 \title{Box-violin plot comparing values between groups}
 \usage{
-BetweenStatPlot(data, x, y, color, palette = NULL)
+BetweenStatPlot(
+  data,
+  x,
+  y,
+  color,
+  palette = NULL,
+  test = c("wilcox.test", "t.test", "none"),
+  comparisons = NULL,
+  step.increase = 0.3
+)
 }
 \arguments{
 \item{data}{A data frame (or a tibble).}
@@ -16,6 +25,12 @@ BetweenStatPlot(data, x, y, color, palette = NULL)
 \item{color}{The color variable from the \code{data}.}
 
 \item{palette}{The color palette for different groups.}
+
+\item{test}{Perform "wilcox.test" or "t.test" or not test.}
+
+\item{comparisons}{A list of length-2 vectors specifying the groups of interest to be compared. For example to compare groups "A" vs "B" and "B" vs "C", the argument is as follow: comparisons = list(c("A", "B"), c("B", "C"))}
+
+\item{step.increase}{numeric vector with the increase in fraction of total height for every additional comparison to minimize overlap.}
 }
 \value{
 ggplot2 object

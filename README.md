@@ -54,7 +54,8 @@ head(iris)
 #> 4          4.6         3.1          1.5         0.2  setosa
 #> 5          5.0         3.6          1.4         0.2  setosa
 #> 6          5.4         3.9          1.7         0.4  setosa
-BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species')
+BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species',
+                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')))
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
@@ -143,3 +144,95 @@ gene2goterm(c("ENSMUSG00000025981", "ENSMUSG00000057363"), organism = 'mmusculus
 #> 17 ARRAYEXPRESS,ENSG
 #> 18 ARRAYEXPRESS,ENSG
 ```
+
+### ggVolcano
+
+``` r
+library(DESeq2)
+#> Loading required package: S4Vectors
+#> Loading required package: stats4
+#> Loading required package: BiocGenerics
+#> Warning: package 'BiocGenerics' was built under R version 4.0.5
+#> Loading required package: parallel
+#> 
+#> Attaching package: 'BiocGenerics'
+#> The following objects are masked from 'package:parallel':
+#> 
+#>     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+#>     clusterExport, clusterMap, parApply, parCapply, parLapply,
+#>     parLapplyLB, parRapply, parSapply, parSapplyLB
+#> The following objects are masked from 'package:stats':
+#> 
+#>     IQR, mad, sd, var, xtabs
+#> The following objects are masked from 'package:base':
+#> 
+#>     anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+#>     dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+#>     grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+#>     order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+#>     rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+#>     union, unique, unsplit, which.max, which.min
+#> 
+#> Attaching package: 'S4Vectors'
+#> The following object is masked from 'package:base':
+#> 
+#>     expand.grid
+#> Loading required package: IRanges
+#> 
+#> Attaching package: 'IRanges'
+#> The following object is masked from 'package:grDevices':
+#> 
+#>     windows
+#> Loading required package: GenomicRanges
+#> Loading required package: GenomeInfoDb
+#> Loading required package: SummarizedExperiment
+#> Loading required package: MatrixGenerics
+#> Loading required package: matrixStats
+#> 
+#> Attaching package: 'MatrixGenerics'
+#> The following objects are masked from 'package:matrixStats':
+#> 
+#>     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse,
+#>     colCounts, colCummaxs, colCummins, colCumprods, colCumsums,
+#>     colDiffs, colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs,
+#>     colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats,
+#>     colProds, colQuantiles, colRanges, colRanks, colSdDiffs, colSds,
+#>     colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+#>     colWeightedMeans, colWeightedMedians, colWeightedSds,
+#>     colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
+#>     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods,
+#>     rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps,
+#>     rowMadDiffs, rowMads, rowMaxs, rowMeans2, rowMedians, rowMins,
+#>     rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
+#>     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars,
+#>     rowWeightedMads, rowWeightedMeans, rowWeightedMedians,
+#>     rowWeightedSds, rowWeightedVars
+#> Loading required package: Biobase
+#> Welcome to Bioconductor
+#> 
+#>     Vignettes contain introductory material; view with
+#>     'browseVignettes()'. To cite Bioconductor, see
+#>     'citation("Biobase")', and for packages 'citation("pkgname")'.
+#> 
+#> Attaching package: 'Biobase'
+#> The following object is masked from 'package:MatrixGenerics':
+#> 
+#>     rowMedians
+#> The following objects are masked from 'package:matrixStats':
+#> 
+#>     anyMissing, rowMedians
+dds <- makeExampleDESeqDataSet(n=5000, m=4, betaSD = 5)
+dds <- DESeq(dds)
+#> estimating size factors
+#> estimating dispersions
+#> gene-wise dispersion estimates
+#> mean-dispersion relationship
+#> final dispersion estimates
+#> fitting model and testing
+res <- results(dds, contrast=c("condition","B","A"))
+res.tab <- as.data.frame(res)
+ggVolcano(res.tab)
+#> Warning: Removed 182 rows containing missing values (geom_point).
+```
+
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />

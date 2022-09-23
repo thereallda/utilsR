@@ -3,6 +3,7 @@
 export(BetweenStatPlot)
 export(gene2goterm)
 export(ggPCA)
+export(ggVolcano)
 import(dplyr)
 import(ggplot2)
 import(rstatix)
