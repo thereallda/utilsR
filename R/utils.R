@@ -77,9 +77,9 @@ ggPCA <- function(object, use.pc=c(1,2),
   # add text label
   if (!is.null(label)) {
     if (repel) {
-      p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20)
+      p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20, color='black')
     } else {
-      p <- p + geom_text(label=label)
+      p <- p + geom_text(label=label, color='black')
     }
   }
   return(p)
