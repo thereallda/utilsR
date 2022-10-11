@@ -4,10 +4,22 @@
 \alias{ggVolcano}
 \title{Volcano plot for DEGs}
 \usage{
-ggVolcano(data, title = NULL)
+ggVolcano(
+  data,
+  up.lfc.cutoff = 1,
+  down.lfc.cutoff = -1,
+  p.cutoff = 0.05,
+  title = NULL
+)
 }
 \arguments{
 \item{data}{DEseq2 result table.}
+
+\item{up.lfc.cutoff}{Log2 fold-change cutoff for up-regulated significant differential expression genes, default: 1.}
+
+\item{down.lfc.cutoff}{Log2 fold-change cutoff for down-regulated significant differential expression genes, default: -1.}
+
+\item{p.cutoff}{P-value (adjusted) cutoff for significant differential expression genes, default: 0.05.}
 
 \item{title}{Title of the plot.}
 }

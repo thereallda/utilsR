@@ -1,10 +1,13 @@
 #' PCA plot from counts matrix
 #'
 #' @param object A count matrix.
-#' @param group Vector of sample groups.
-#' @param label Vector of sample names or labels.
-#' @param vst.norm if TRUE perform vst transformation.
+#' @param use.pc Which two PCs to be used, default PC1 in x-axis and PC2 in y-axis.
+#' @param color Vector indicates the color mapping of samples, default NULL.
+#' @param label Vector of sample names or labels, default NULL.
+#' @param shape Vector indicates the shape mapping of samples, default NULL.
+#' @param vst.norm Whether to perform \code{vst} transformation, default FALSE.
 #' @param palette The color palette for different groups.
+#' @param repel Whether to use \code{ggrepel} to avoid overlapping text labels or not, default TRUE.
 #'
 #' @return ggplot2 object
 #' @export
@@ -15,25 +18,52 @@
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom stats prcomp
 #' @importFrom paintingr paint_palette
-ggPCA <- function(object, group, label=NULL, vst.norm=FALSE, palette=NULL) {
+ggPCA <- function(object, use.pc=c(1,2),
+                  color=NULL, label=NULL, shape=NULL,
+                  vst.norm=FALSE, palette=NULL, repel=TRUE) {
   if (vst.norm) {
     counts_norm <- DESeq2::vst(as.matrix(object))
   } else {
     counts_norm <- object
   }
 
+  # perform PCA
   pca <- prcomp(t(counts_norm))
   pc.var <- round(summary(pca)$importance[2,], 3)
-  pca_dat <- as.data.frame(pca$x) %>%
-    mutate(group = group)
+  pca_dat <- as.data.frame(pca$x)
 
-  if (is.null(palette)) {
-    palette <- paintingr::paint_palette("Spring", length(unique(pca_dat$group)), 'continuous')
+  # check if use.pc exceed the range of pcs
+  use.pc <- paste0('PC', use.pc)
+  if (!all(use.pc %in% colnames(pca_dat))) {
+    stop(use.pc, "exceed the range of PCs.")
+  }
+  # mapping data
+  var.ls <- list(color = color,
+                 shape = shape
+                 )
+  var.length <- unlist(lapply(var.ls, length))
+  var.ls <- var.ls[var.length == max(var.length)]
+  map_df <- as.data.frame(Reduce(cbind, var.ls))
+  colnames(map_df) <- names(var.ls)
+  # combine with pca_dat if not empty
+  if (!any(dim(map_df) == 0)) {
+    pca_dat <- cbind(pca_dat, map_df)
   }
 
-  p <- pca_dat %>%
-    ggplot(aes(x=PC1, y=PC2)) +
-    geom_point(aes(color=group), size=3) +
+  # generate color palette
+  if (is.null(palette)) {
+    palette <- paintingr::paint_palette("Spring", length(unique(pca_dat$color)), 'continuous')
+  }
+
+  # create aes mapping
+  map_ls <- list(x = use.pc[1],
+                 y = use.pc[2],
+                 color = "color",
+                 shape = "shape")
+  mapping <- do.call(ggplot2::aes_string, map_ls)
+
+  p <- ggplot(pca_dat, mapping) +
+    geom_point(size=3) +
     geom_vline(xintercept=0, color='grey80', lty=2) +
     geom_hline(yintercept=0, color='grey80', lty=2) +
     theme_bw() +
@@ -44,8 +74,13 @@ ggPCA <- function(object, group, label=NULL, vst.norm=FALSE, palette=NULL) {
     labs(x=paste0('PC1: ', pc.var[1]*100, '%'),
          y=paste0('PC2: ', pc.var[2]*100, '%'))
 
+  # add text label
   if (!is.null(label)) {
-    p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20)
+    if (repel) {
+      p <- p + ggrepel::geom_text_repel(label=label, max.overlaps = 20)
+    } else {
+      p <- p + geom_text(label=label)
+    }
   }
   return(p)
 }
@@ -146,16 +181,19 @@ gene2goterm <- function(query, organism = 'hsapiens', ...) {
 #'
 #' @param data DEseq2 result table.
 #' @param title Title of the plot.
+#' @param up.lfc.cutoff Log2 fold-change cutoff for up-regulated significant differential expression genes, default: 1.
+#' @param down.lfc.cutoff Log2 fold-change cutoff for down-regulated significant differential expression genes, default: -1.
+#' @param p.cutoff P-value (adjusted) cutoff for significant differential expression genes, default: 0.05.
 #'
 #' @return ggplot2 object
 #' @export
 #'
 #' @import dplyr
 #' @import ggplot2
-ggVolcano <- function(data, title=NULL) {
+ggVolcano <- function(data, up.lfc.cutoff=1, down.lfc.cutoff=-1, p.cutoff=0.05, title=NULL) {
   data <- data %>%
-    dplyr::mutate(stat = if_else(padj < 0.05 & log2FoldChange >= 1, "Up",
-                          if_else(padj < 0.05 & log2FoldChange <= -1, "Down", "NS", missing = "NS"), missing = "NS"))
+    dplyr::mutate(stat = if_else(padj < p.cutoff & log2FoldChange >= up.lfc.cutoff, "Up",
+                          if_else(padj < p.cutoff & log2FoldChange <= down.lfc.cutoff, "Down", "NS", missing = "NS"), missing = "NS"))
   count.dat <- data %>% dplyr::count(stat) %>% dplyr::mutate(label = paste0(stat, ": ", n))
 
   data %>%
@@ -166,8 +204,8 @@ ggVolcano <- function(data, title=NULL) {
           plot.title = element_text(hjust = 0.5),
           axis.text = element_text(color='black')) +
     scale_color_manual(values = c("#4F99B4","#808080","#CBC28D"), labels = count.dat$label) +
-    geom_vline(xintercept = c(-1, 1), lty = "dashed") +
-    geom_hline(yintercept = -log10(0.05), lty = "dashed") +
+    geom_vline(xintercept = c(down.lfc.cutoff, up.lfc.cutoff), lty = "dashed") +
+    geom_hline(yintercept = -log10(p.cutoff), lty = "dashed") +
     labs(color='', title = title)
 }
 

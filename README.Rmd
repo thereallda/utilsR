@@ -38,12 +38,13 @@ library(utilsR)
 
 PCA plot from counts matrix
 
-```{r}
+```{r,message=FALSE}
 set.seed(123)
 counts_mat <- matrix(rnbinom(30000, mu=100, size=1), ncol=10)
 groups <- rep(c('A','B'), each=5)
 labels <- paste(rep(c('A','B'), each=5), 1:5, sep = '.')
-ggPCA(counts_mat, group = groups, label = labels, vst.norm = TRUE)
+ggPCA(counts_mat, color = groups, shape = groups, 
+      label = labels, vst.norm = TRUE, repel = TRUE)
 ```
 
 
@@ -69,11 +70,17 @@ gene2goterm(c("ENSMUSG00000025981", "ENSMUSG00000057363"), organism = 'mmusculus
 
 ### ggVolcano
 
-```{r}
+Volcano plot from DESeq2 results. 
+
+```{r,warning=FALSE,message=FALSE}
 library(DESeq2)
 dds <- makeExampleDESeqDataSet(n=5000, m=4, betaSD = 5)
 dds <- DESeq(dds)
 res <- results(dds, contrast=c("condition","B","A"))
 res.tab <- as.data.frame(res)
-ggVolcano(res.tab)
+ggVolcano(res.tab,   
+          up.lfc.cutoff = 1,
+          down.lfc.cutoff = -1,
+          p.cutoff = 0.05,
+          title = 'DEMO')
 ```
