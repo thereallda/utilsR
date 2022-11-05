@@ -71,8 +71,8 @@ ggPCA <- function(object, use.pc=c(1,2),
           legend.position = 'top',
           axis.text = element_text(color='black')) +
     scale_color_manual(values = palette) +
-    labs(x=paste0('PC1: ', pc.var[1]*100, '%'),
-         y=paste0('PC2: ', pc.var[2]*100, '%'))
+    labs(x=paste0(use.pc[1], ': ', pc.var[1]*100, '%'),
+         y=paste0(use.pc[2], ': ', pc.var[2]*100, '%'))
 
   # add text label
   if (!is.null(label)) {
@@ -125,7 +125,7 @@ BetweenStatPlot <- function(data, x, y, color, palette = NULL,
       adjust_pvalue() %>%
       p_format(.data$p.adj, digits = 2, leading.zero = FALSE,
                trailing.zero = TRUE, add.p = TRUE, accuracy = 2e-16) %>%
-      add_xy_position(x = x, dodge=0.8, step.increase=step.increase)
+      add_xy_position(x=x, dodge=0.8, step.increase=step.increase)
   }
 
   x.labs <- paste0(unique(data[,x]), "\n(n=", tabulate(as.factor(data[,x])),")")
@@ -175,29 +175,36 @@ gene2goterm <- function(query, organism = 'hsapiens', ...) {
   return(geneGO)
 }
 
-# volcano plot
-
 #' Volcano plot for DEGs
 #'
-#' @param data DEseq2 result table.
-#' @param title Title of the plot.
+#' @param data Differential analysis result table.
+#' @param lfc.col Column name of the log fold-change, default: "log2FoldChange".
+#' @param p.col Column name of the adjusted p-value, default: "padj".
 #' @param up.lfc.cutoff Log2 fold-change cutoff for up-regulated significant differential expression genes, default: 1.
 #' @param down.lfc.cutoff Log2 fold-change cutoff for down-regulated significant differential expression genes, default: -1.
 #' @param p.cutoff P-value (adjusted) cutoff for significant differential expression genes, default: 0.05.
+#' @param title Title of the plot.
 #'
 #' @return ggplot2 object
 #' @export
 #'
 #' @import dplyr
 #' @import ggplot2
-ggVolcano <- function(data, up.lfc.cutoff=1, down.lfc.cutoff=-1, p.cutoff=0.05, title=NULL) {
+ggVolcano <- function(data,
+                      lfc.col = "log2FoldChange",
+                      p.col = "padj",
+                      up.lfc.cutoff = 1,
+                      down.lfc.cutoff = -1,
+                      p.cutoff = 0.05,
+                      title = NULL) {
   data <- data %>%
-    dplyr::mutate(stat = if_else(padj < p.cutoff & log2FoldChange >= up.lfc.cutoff, "Up",
-                          if_else(padj < p.cutoff & log2FoldChange <= down.lfc.cutoff, "Down", "NS", missing = "NS"), missing = "NS"))
+    dplyr::mutate(stat = if_else(!!sym(p.col) < p.cutoff & !!sym(lfc.col) >= up.lfc.cutoff, "Up",
+                          if_else(!!sym(p.col) < p.cutoff & !!sym(lfc.col) <= down.lfc.cutoff, "Down", "NS", missing = "NS"), missing = "NS"))
   count.dat <- data %>% dplyr::count(stat) %>% dplyr::mutate(label = paste0(stat, ": ", n))
+  data$logp <- -log10(data[,p.col])
 
   data %>%
-    ggplot(aes(x=log2FoldChange, y = -log10(padj), color=stat)) +
+    ggplot(aes_(x=as.name(lfc.col), y=quote(logp), color=quote(stat))) +
     geom_point() +
     theme_minimal() +
     theme(legend.position = "top",
@@ -206,7 +213,7 @@ ggVolcano <- function(data, up.lfc.cutoff=1, down.lfc.cutoff=-1, p.cutoff=0.05, 
     scale_color_manual(values = c("#4F99B4","#808080","#CBC28D"), labels = count.dat$label) +
     geom_vline(xintercept = c(down.lfc.cutoff, up.lfc.cutoff), lty = "dashed") +
     geom_hline(yintercept = -log10(p.cutoff), lty = "dashed") +
-    labs(color='', title = title)
+    labs(x='log2 Fold Change', y='-log10 FDR', color='', title = title)
 }
 
 # For adjusting no visible binding

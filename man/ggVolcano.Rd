@@ -6,6 +6,8 @@
 \usage{
 ggVolcano(
   data,
+  lfc.col = "log2FoldChange",
+  p.col = "padj",
   up.lfc.cutoff = 1,
   down.lfc.cutoff = -1,
   p.cutoff = 0.05,
@@ -13,7 +15,11 @@ ggVolcano(
 )
 }
 \arguments{
-\item{data}{DEseq2 result table.}
+\item{data}{Differential analysis result table.}
+
+\item{lfc.col}{Column name of the log fold-change, default: "log2FoldChange".}
+
+\item{p.col}{Column name of the adjusted p-value, default: "padj".}
 
 \item{up.lfc.cutoff}{Log2 fold-change cutoff for up-regulated significant differential expression genes, default: 1.}
 

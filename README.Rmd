@@ -72,13 +72,18 @@ gene2goterm(c("ENSMUSG00000025981", "ENSMUSG00000057363"), organism = 'mmusculus
 
 Volcano plot from DESeq2 results. 
 
+Use `lfc.col` and `p.col` to specify the colname names of log-fold-change and adjusted p-value, respectively. 
+
 ```{r,warning=FALSE,message=FALSE}
 library(DESeq2)
 dds <- makeExampleDESeqDataSet(n=5000, m=4, betaSD = 5)
 dds <- DESeq(dds)
 res <- results(dds, contrast=c("condition","B","A"))
 res.tab <- as.data.frame(res)
+head(res.tab)
 ggVolcano(res.tab,   
+          lfc.col = "log2FoldChange",
+          p.col = "padj",
           up.lfc.cutoff = 1,
           down.lfc.cutoff = -1,
           p.cutoff = 0.05,
