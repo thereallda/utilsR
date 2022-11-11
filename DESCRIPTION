@@ -23,7 +23,5 @@ Imports:
     GO.db,
     gprofiler2,
     paintingr,
-    rlang,
     rstatix,
-    stats,
-    stringr
+    stats

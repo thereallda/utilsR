@@ -92,59 +92,59 @@ ggPCA <- function(object, use.pc=c(1,2),
 #' @param y The value variable from the \code{data}.
 #' @param color The color variable from the \code{data}.
 #' @param palette The color palette for different groups.
-#' @param test Perform "wilcox.test" or "t.test" or not test.
-#' @param step.increase numeric vector with the increase in fraction of total height for every additional comparison to minimize overlap.
+#' @param test Perform wilcoxon rank sum test or t-test or no test, must be one of c("wilcox.test", "t.test", "none").
+#' @param add.p Label p-value or adjusted p-value, must be one of c("p", "p.adj").
+#' @param step.increase Numeric vector with the increase in fraction of total height for every additional comparison to minimize overlap.
 #' @param comparisons	A list of length-2 vectors specifying the groups of interest to be compared. For example to compare groups "A" vs "B" and "B" vs "C", the argument is as follow: comparisons = list(c("A", "B"), c("B", "C"))
 #' @return ggplot2 object
 #' @export
 #'
 #' @import dplyr
 #' @import ggplot2
-#' @import rstatix
+#' @importFrom rstatix wilcox_test t_test adjust_pvalue p_format add_xy_position
 #' @importFrom paintingr paint_palette
 #' @importFrom ggpubr stat_pvalue_manual
 #' @importFrom stats as.formula
-#' @importFrom rlang .data
 BetweenStatPlot <- function(data, x, y, color, palette = NULL,
-                            test = c('wilcox.test', 't.test', 'none'),
+                            test = c("wilcox.test", "t.test", "none"),
+                            add.p = c("p", "p.adj"),
                             comparisons = NULL,
                             step.increase=0.3) {
-  stat.formula <- as.formula(paste(y, "~", x))
+  stat.formula <- stats::as.formula(paste(y, "~", x))
 
-  test <- match.arg(test, choices = c('wilcox.test', 't.test', 'none'))
-  if (test != 'none') {
-    if (test == 'wilcox.test') {
-      stat_dat <- data %>%
-        wilcox_test(stat.formula, comparisons = comparisons)
+  test <- match.arg(test, choices = c("wilcox.test", "t.test", "none"))
+  if (test != "none") {
+    if (test == "wilcox.test") {
+      stat_dat <- rstatix::wilcox_test(data, stat.formula, comparisons = comparisons)
     }
-    if (test == 't.test') {
-      stat_dat <- data %>%
-        t_test(stat.formula, comparisons = comparisons)
+    if (test == "t.test") {
+      stat_dat <- rstatix::t_test(data, stat.formula, comparisons = comparisons)
     }
+    add.p <- match.arg(add.p, choices = c("p", "p.adj"))
     stat_dat <- stat_dat %>%
-      adjust_pvalue() %>%
-      p_format(.data$p.adj, digits = 2, leading.zero = FALSE,
+      rstatix::adjust_pvalue() %>%
+      rstatix::p_format(!!dplyr::sym(add.p), digits = 2, leading.zero = FALSE,
                trailing.zero = TRUE, add.p = TRUE, accuracy = 2e-16) %>%
-      add_xy_position(x=x, dodge=0.8, step.increase=step.increase)
+      rstatix::add_xy_position(x = x, dodge=0.8, step.increase=step.increase)
   }
-
-  x.labs <- paste0(unique(data[,x]), "\n(n=", tabulate(as.factor(data[,x])),")")
+  data[,x] <- as.factor(data[,x])
+  x.labs <- paste0(levels(data[,x]), "\n(n=", tabulate(data[,x]),")")
   x.num <- length(unique(data[,color])) # number of x types
-  if (is.null(palette)) palette <- paint_palette("Spring", x.num, 'continuous')
+  if (is.null(palette)) palette <- paintingr::paint_palette("Spring", x.num, "continuous")
 
   p <- data %>%
     ggplot(aes_string(x, y, color = color)) +
     geom_violin(width = 0.8) +
     geom_boxplot(width = 0.3, outlier.shape = NA) +
     theme_classic() +
-    theme(legend.position = 'none',
-          axis.text = element_text(color='black')) +
+    theme(legend.position = "none",
+          axis.text = element_text(color="black")) +
     scale_color_manual(values = palette) +
     scale_x_discrete(labels = x.labs) +
-    labs(x='')
+    labs(x="")
 
-  if (exists('stat_dat')) {
-    p <- p + stat_pvalue_manual(data = stat_dat, label = "p.adj", tip.length = 0.01, size = 3)
+  if (exists("stat_dat")) {
+    p <- p + ggpubr::stat_pvalue_manual(data = stat_dat, label = add.p, tip.length = 0.01, size = 3)
   }
 
   return(p)
@@ -206,7 +206,7 @@ ggVolcano <- function(data,
   data %>%
     ggplot(aes_(x=as.name(lfc.col), y=quote(logp), color=quote(stat))) +
     geom_point() +
-    theme_minimal() +
+    theme_classic() +
     theme(legend.position = "top",
           plot.title = element_text(hjust = 0.5),
           axis.text = element_text(color='black')) +

@@ -55,7 +55,8 @@ head(iris)
 #> 5          5.0         3.6          1.4         0.2  setosa
 #> 6          5.4         3.9          1.7         0.4  setosa
 BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species',
-                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')))
+                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')),
+                add.p = 'p')
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />

@@ -56,7 +56,8 @@ Box-violin plot comparing values between groups
 data("iris")
 head(iris)
 BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species',
-                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')))
+                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')),
+                add.p = 'p')
 ```
 
 ### gene2goterm
