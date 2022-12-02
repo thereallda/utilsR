@@ -164,14 +164,15 @@ BetweenStatPlot <- function(data, x, y, color, palette = NULL,
 #' organism = 'mmusculus')
 #'
 #' @importFrom GO.db GOTERM
-#' @importFrom AnnotationDbi Term
+#' @importFrom AnnotationDbi Term Ontology
 #' @importFrom gprofiler2 gconvert
 gene2goterm <- function(query, organism = 'hsapiens', ...) {
-  goterm <- Term(GOTERM)
-  goterm_df <- data.frame(target=names(goterm), term_name=goterm)
-  geneGO <- gconvert(query, organism = organism, target = 'GO', ...)
+  goterm_df <- data.frame(target=names(AnnotationDbi::Term(GO.db::GOTERM)),
+                       term=AnnotationDbi::Term(GO.db::GOTERM),
+                       ont=AnnotationDbi::Ontology(GO.db::GOTERM))
+  geneGO <- gprofiler2::gconvert(query, organism = organism, target = 'GO', ...)
   geneGO <- merge(geneGO, goterm_df, by='target')
-  geneGO <- geneGO[,c('input_number', 'input', 'target_number', 'target', 'term_name', 'name', 'description', 'namespace')]
+  geneGO <- geneGO[,c('input', 'name', 'description', 'target', 'term', 'ont')]
   return(geneGO)
 }
 

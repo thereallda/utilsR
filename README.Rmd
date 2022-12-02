@@ -88,5 +88,5 @@ ggVolcano(res.tab,
           up.lfc.cutoff = 1,
           down.lfc.cutoff = -1,
           p.cutoff = 0.05,
-          title = 'DEMO')
+          title = 'Condition: B/A')
 ```
