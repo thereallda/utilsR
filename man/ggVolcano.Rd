@@ -11,7 +11,9 @@ ggVolcano(
   up.lfc.cutoff = 1,
   down.lfc.cutoff = -1,
   p.cutoff = 0.05,
-  title = NULL
+  title = NULL,
+  label.genes = NULL,
+  repel = TRUE
 )
 }
 \arguments{
@@ -28,6 +30,10 @@ ggVolcano(
 \item{p.cutoff}{P-value (adjusted) cutoff for significant differential expression genes, default: 0.05.}
 
 \item{title}{Title of the plot.}
+
+\item{label.genes}{Vector of gene ids to label. Should be matched with the rowname of \code{data}}
+
+\item{repel}{Whether to use \code{ggrepel} to avoid overlapping text labels or not, default TRUE.}
 }
 \value{
 ggplot2 object

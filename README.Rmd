@@ -1,5 +1,7 @@
 ---
-output: github_document
+output:   
+  md_document:
+    pandoc_args: ["--wrap=preserve"]
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -18,7 +20,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-`utilsR` is my personal R-based useful utils in data analysis. Feel free to use it :)
+`utilsR` is a personal R-based useful utils in data analysis. Feel free to use it :)
 
 ## Installation
 
@@ -28,23 +30,35 @@ You can install the released version of utilsR the development version from [Git
 # install.packages("devtools")
 devtools::install_github("thereallda/utilsR")
 ```
+
+NOTE: Visualization of PCA (`PCAplot`) and `BetweenStatPlot` are now implemented in `enONE` package, which can be installed with: 
+
+```{r,eval=FALSE}
+devtools::install_github("thereallda/enONE")
+```
+
 ## Example
 
 ```{r,warning=FALSE,message=FALSE}
 library(utilsR)
 ```
 
-### ggPCA
+### PCAplot
 
-PCA plot from counts matrix
+PCA plot from counts matrix 
+> Function to visualize PCA plot (`PCAplot`) now can be found at `enONE` package
 
 ```{r,message=FALSE}
 set.seed(123)
 counts_mat <- matrix(rnbinom(30000, mu=100, size=1), ncol=10)
 groups <- rep(c('A','B'), each=5)
 labels <- paste(rep(c('A','B'), each=5), 1:5, sep = '.')
-ggPCA(counts_mat, color = groups, shape = groups, 
-      label = labels, vst.norm = TRUE, repel = TRUE)
+enONE::PCAplot(counts_mat, 
+               color = groups, 
+               shape = groups, 
+               label = labels, 
+               vst.norm = TRUE, 
+               repel = TRUE)
 ```
 
 
@@ -52,11 +66,13 @@ ggPCA(counts_mat, color = groups, shape = groups,
 
 Box-violin plot comparing values between groups
 
+> `BetweenStatPlot` now can be found at `enONE` package
+
 ```{r}
 data("iris")
 head(iris)
-BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species',
-                comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')),
+enONE::BetweenStatPlot(iris, x = 'Species', y = 'Sepal.Width', color = 'Species',
+                       comparisons = list(c('setosa','versicolor'), c('versicolor','virginica')),
                 add.p = 'p')
 ```
 
@@ -75,6 +91,8 @@ Volcano plot from DESeq2 results.
 
 Use `lfc.col` and `p.col` to specify the colname names of log-fold-change and adjusted p-value, respectively. 
 
+Use `label.genes` to pass a vector of gene names (or gene ids consistent with rownames of the provided DE table) for label at the plot. 
+
 ```{r,warning=FALSE,message=FALSE}
 library(DESeq2)
 dds <- makeExampleDESeqDataSet(n=5000, m=4, betaSD = 5)
@@ -88,5 +106,7 @@ ggVolcano(res.tab,
           up.lfc.cutoff = 1,
           down.lfc.cutoff = -1,
           p.cutoff = 0.05,
-          title = 'Condition: B/A')
+          title = 'Condition: B/A',
+          label.genes = c('gene877','gene763','gene4239','gene3325'),
+          repel = T)
 ```
