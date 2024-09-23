@@ -35,6 +35,7 @@ gene2goterm <- function(query, organism = 'hsapiens', ...) {
 #' @param title Title of the plot.
 #' @param label.genes Vector of gene ids to label. Should be matched with the rowname of \code{data}
 #' @param repel Whether to use \code{ggrepel} to avoid overlapping text labels or not, default TRUE.
+#' @param pt.color Vector of colors for point
 #'
 #' @return ggplot2 object
 #' @export
@@ -50,20 +51,25 @@ ggVolcano <- function(data,
                       p.cutoff = 0.05,
                       title = NULL,
                       label.genes = NULL,
-                      repel = TRUE) {
+                      repel = TRUE,
+                      pt.color = c("#4F99B4","#808080","#CBC28D")) {
   data <- data %>%
     dplyr::mutate(stat = if_else(!!sym(p.col) < p.cutoff & !!sym(lfc.col) >= up.lfc.cutoff, "Up",
                                  if_else(!!sym(p.col) < p.cutoff & !!sym(lfc.col) <= down.lfc.cutoff, "Down", "NS", missing = "NS"), missing = "NS"))
   count.dat <- data %>% dplyr::count(stat) %>% dplyr::mutate(label = paste0(stat, ": ", n))
   data$logp <- -log10(data[,p.col])
 
-  p1 <- ggplot(data, aes_(x=as.name(lfc.col), y=quote(logp), color=quote(stat))) +
-    geom_point() +
+  if (length(pt.color) != 3) {
+    stop("Provided colors for point should be 3.")
+  }
+
+  p1 <- ggplot(data, aes_(x=as.name(lfc.col), y=quote(logp))) +
+    geom_point(aes_(color=quote(stat))) +
     theme_classic() +
     theme(legend.position = "top",
           plot.title = element_text(hjust = 0.5),
           axis.text = element_text(color='black')) +
-    scale_color_manual(values = c("#4F99B4","#808080","#CBC28D"), labels = count.dat$label) +
+    scale_color_manual(values = pt.color, labels = count.dat$label) +
     geom_vline(xintercept = c(down.lfc.cutoff, up.lfc.cutoff), lty = "dashed") +
     geom_hline(yintercept = -log10(p.cutoff), lty = "dashed") +
     labs(x='log2 Fold Change', y='-log10 FDR', color='', title = title)
@@ -71,7 +77,7 @@ ggVolcano <- function(data,
   data$gene <- rownames(data)
   if (!is.null(label.genes)) {
     if (!all(unique(label.genes) %in% rownames(data))) {
-      return("All provided labels should be included in rownames of DE table.")
+      stop("All provided labels should be included in rownames of DE table.")
     } else {
       if (repel) {
         p1 <- p1 + ggrepel::geom_text_repel(aes(label=gene),

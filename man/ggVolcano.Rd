@@ -13,7 +13,8 @@ ggVolcano(
   p.cutoff = 0.05,
   title = NULL,
   label.genes = NULL,
-  repel = TRUE
+  repel = TRUE,
+  pt.color = c("#4F99B4", "#808080", "#CBC28D")
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ ggVolcano(
 \item{label.genes}{Vector of gene ids to label. Should be matched with the rowname of \code{data}}
 
 \item{repel}{Whether to use \code{ggrepel} to avoid overlapping text labels or not, default TRUE.}
+
+\item{pt.color}{Vector of colors for point}
 }
 \value{
 ggplot2 object
